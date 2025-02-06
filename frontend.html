@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device, initial-scale=1.0">
+    <title>CampusLive</title>
+
+    <!--Leaflet css-->
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <!--Leaflet Routing-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+
+    <style>
+        body{
+            margin: 0;
+            padding:0;
+        }
+    </style>
+</head>
+<body>
+    <div id="map" style="width:100%; height:100vh"></div>
+</body>
+</html>
+
+<!--Leaflet JS-->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<!--Leaflet Routing-->
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+
+<script>
+
+    //leaflet map
+    var map = L.map('map').setView([39.1311, -84.5162], 16);
+    var corner1 = L.latLng(39.1547,-84.5338),
+    corner2 = L.latLng(39.1160, -84.4954),
+    bounds = L.latLngBounds(corner1, corner2);
+   
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+    L.Control.geocoder().addTo(map);
+
+    if(!navigator.geolocation){
+    console.log("Your browser doesn't support the geolocation feature!")
+} else{
+    setInterval(() => {
+      navigator.geolocation.getCurrentPosition(getPosition)
+    }, 5000);
+    navigator.geolocation.getCurrentPosition(getPosition)
+}
+
+
+function getPosition(position){
+    console.log(position)
+    var lat = position.coords.latitude
+    var long = position.coords.longitiude
+    var accuracy = position.coords.accuracy
+
+    if(marker) {
+      map.removeLayer(marker)
+    }
+
+    if(circle){
+      map.removeLayer(circle)
+    }
+
+    var marker = L.marker([lat, long]).addTo(map)
+    var circle = L.circle([lat, long], {radius: accuracy}).addTo(map)
+
+    var featureGroup = L.featureGroup([marker, circle]).addTo(map)
+
+    map.fitBounds(featureGroup.getBounds())
+    
+    console.log("Your coordinate is : Lat: "+ lat +" Long: "+ long + " Accuracy: "+ accuracy)
+}
+
+    map.on('click', function (e){
+        console.log(e)
+        var Marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+       
+        L.Routing.control({
+        waypoints: [
+        L.latLng(39.1311, -84.5162),
+        L.latLng(e.latlng.lat, e.latlng.lng)
+  ]
+    }).addTo(map);
+    })
+</script>
